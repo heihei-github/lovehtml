@@ -1,20 +1,112 @@
 // variables
-var $window = $(window), gardenCtx, gardenCanvas, $garden, garden;
+var $window = $(window), gardenCtx, gardenCanvas, $garden, garden, $loveHeart;
 var clientWidth = $(window).width();
 var clientHeight = $(window).height();
 var offsetX, offsetY, heartScale = 1;
 
+// 计算心形原始尺寸（通过采样点计算边界框）
+function calculateHeartBoundingBox() {
+    var minX = Infinity, maxX = -Infinity;
+    var minY = Infinity, maxY = -Infinity;
+
+    // 直接使用t从0到2π进行采样
+    // t是弧度参数，对应心形参数方程中的角度
+    for (var t = 0; t <= 2 * Math.PI; t += 0.01) {
+        var x = 19.5 * (16 * Math.pow(Math.sin(t), 3));
+        var y = -20 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+    }
+
+    return {
+        width: maxX - minX,
+        height: maxY - minY,
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY
+    };
+}
+
+// 确保容器已完全渲染，获取精确尺寸
+function getContainerDimensions(element) {
+    // 使用getBoundingClientRect获取精确像素尺寸
+    var rect = element.getBoundingClientRect();
+
+    // 考虑padding和border的影响
+    var computedStyle = window.getComputedStyle(element);
+    var paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+    var paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+    var paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+    var paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+    var borderLeft = parseFloat(computedStyle.borderLeftWidth) || 0;
+    var borderRight = parseFloat(computedStyle.borderRightWidth) || 0;
+    var borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
+    var borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
+
+    // 计算内部可用尺寸
+    var containerWidth = rect.width - paddingLeft - paddingRight - borderLeft - borderRight;
+    var containerHeight = rect.height - paddingTop - paddingBottom - borderTop - borderBottom;
+
+    // 确保最小尺寸
+    containerWidth = Math.max(containerWidth, 100);
+    containerHeight = Math.max(containerHeight, 100);
+
+    return {
+        width: containerWidth,
+        height: containerHeight,
+        rect: rect
+    };
+}
+
+// 计算心形缩放和偏移
+function calculateHeartScaleAndOffset() {
+    var dimensions = getContainerDimensions($loveHeart[0]);
+    var containerWidth = dimensions.width;
+    var containerHeight = dimensions.height;
+
+    var heartBBox = calculateHeartBoundingBox();
+    var heartOriginalWidth = heartBBox.width;
+    var heartOriginalHeight = heartBBox.height;
+
+    // 计算缩放比例，使心形完全适应容器
+    var availableWidth = containerWidth * 0.9;  // 留出10%边距
+    var availableHeight = containerHeight * 0.9; // 留出10%边距
+
+    var scaleByWidth = availableWidth / heartOriginalWidth;
+    var scaleByHeight = availableHeight / heartOriginalHeight;
+
+    // 取较小比例，确保心形完全显示
+    heartScale = Math.min(scaleByWidth, scaleByHeight);
+
+    // 计算偏移量，使心形居中
+    offsetX = containerWidth / 2;
+    offsetY = containerHeight / 2;
+
+    // 调整偏移量以补偿心形非对称性
+    offsetX -= (heartBBox.minX + heartBBox.maxX) / 2 * heartScale;
+    offsetY -= (heartBBox.minY + heartBBox.maxY) / 2 * heartScale;
+
+    return {
+        width: containerWidth,
+        height: containerHeight
+    };
+}
+
 $(function () {
     // setup garden
 	$loveHeart = $("#loveHeart");
-	offsetX = $loveHeart.width() / 2;
-	offsetY = $loveHeart.height() / 2 - 30;
-    // 计算心形缩放比例，基于容器高度
-    heartScale = $loveHeart.height() / 600 * 0.9;
+
+    // 计算缩放和偏移
+    var containerSize = calculateHeartScaleAndOffset();
+
     $garden = $("#garden");
     gardenCanvas = $garden[0];
-	gardenCanvas.width = $("#loveHeart").width();
-    gardenCanvas.height = $("#loveHeart").height()
+	gardenCanvas.width = containerSize.width;
+    gardenCanvas.height = containerSize.height;
     gardenCtx = gardenCanvas.getContext("2d");
     gardenCtx.globalCompositeOperation = "lighter";
     garden = new Garden(gardenCtx, gardenCanvas);
@@ -30,15 +122,11 @@ $(window).resize(function() {
     var newHeight = $(window).height();
 
     // 更新画布尺寸
-    if ($loveHeart && $loveHeart.length) {
-        gardenCanvas.width = $loveHeart.width();
-        gardenCanvas.height = $loveHeart.height();
-
-        // 更新偏移量
-        offsetX = $loveHeart.width() / 2;
-        offsetY = $loveHeart.height() / 2 - 30;
-        // 更新心形缩放比例
-        heartScale = $loveHeart.height() / 600 * 0.9;
+    if ($loveHeart && $loveHeart.length && gardenCanvas) {
+        // 使用通用函数计算缩放和偏移
+        var containerSize = calculateHeartScaleAndOffset();
+        gardenCanvas.width = containerSize.width;
+        gardenCanvas.height = containerSize.height;
     }
 
     // 更新客户端尺寸记录
