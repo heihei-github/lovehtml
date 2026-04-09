@@ -2,13 +2,15 @@
 var $window = $(window), gardenCtx, gardenCanvas, $garden, garden;
 var clientWidth = $(window).width();
 var clientHeight = $(window).height();
-var offsetX, offsetY;
+var offsetX, offsetY, heartScale = 1;
 
 $(function () {
     // setup garden
 	$loveHeart = $("#loveHeart");
 	offsetX = $loveHeart.width() / 2;
 	offsetY = $loveHeart.height() / 2 - 30;
+    // 计算心形缩放比例，基于容器高度
+    heartScale = $loveHeart.height() / 600 * 0.9;
     $garden = $("#garden");
     gardenCanvas = $garden[0];
 	gardenCanvas.width = $("#loveHeart").width();
@@ -35,6 +37,8 @@ $(window).resize(function() {
         // 更新偏移量
         offsetX = $loveHeart.width() / 2;
         offsetY = $loveHeart.height() / 2 - 30;
+        // 更新心形缩放比例
+        heartScale = $loveHeart.height() / 600 * 0.9;
     }
 
     // 更新客户端尺寸记录
@@ -44,8 +48,8 @@ $(window).resize(function() {
 
 function getHeartPoint(angle) {
 	var t = angle / Math.PI;
-	var x = 19.5 * (16 * Math.pow(Math.sin(t), 3));
-	var y = - 20 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+	var x = heartScale * 19.5 * (16 * Math.pow(Math.sin(t), 3));
+	var y = - heartScale * 20 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
 	return new Array(offsetX + x, offsetY + y);
 }
 
