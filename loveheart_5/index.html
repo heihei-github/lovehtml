@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Love Line with Miss.Hu</title>
+
+    <style type="text/css">
+    @font-face {
+        font-family: digit;
+        src: url('digital-7_mono.ttf') format("truetype");
+    }
+    </style>
+
+    <link href="css/default.css" type="text/css" rel="stylesheet">
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/garden.js"></script>
+    <script type="text/javascript" src="js/functions_dev.js"></script>
+</head>
+<body>
+    <!-- 背景音乐 -->
+    <audio autoplay loop>
+        <source src="http://other.web.ri01.sycdn.kuwo.cn/resource/n3/19/68/2405391895.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <header class="header">
+            <h1>💖 Love Line with Miss.Hu 💖</h1>
+            <p class="subtitle">A journey of love and memories</p>
+        </header>
+
+        <main class="main-content">
+            <!-- 左侧：爱心动画 -->
+            <div class="animation-section">
+                <div class="heart-container" id="loveHeart">
+                    <canvas id="garden"></canvas>
+                    <div class="love-messages" id="words">
+                        <div id="messages">
+                            <div class="message-text">相遇，相识，相恋...</div>
+                            <div id="elapseClock" class="time-counter"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：文字内容 -->
+            <div class="text-section">
+                <div class="love-letter" id="code">
+                    <div class="letter-content">
+                        <p>我很努力的<br>
+                        要成为一个<span class="keyword">优秀的男朋友</span></p>
+
+                        <p>你也很努力的<br>
+                        在成为一个<br>
+                        <span class="keyword">优秀的女朋友的路上</span></p>
+
+                        <p>这种感觉<br>
+                        真的是<br>
+                        <span class="keyword">太好了</span></p>
+
+                        <p>唯有梦想与好姑娘<br>
+                        <span class="keyword">不可辜负</span></p>
+
+                        <hr class="divider">
+
+                        <p class="signature-line">
+                            <span class="keyword">I want to say:</span><br>
+                            Miss.Hu<br>
+                            <span class="keyword"> I love you! </span><br>
+                            --周小狗
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 隐藏的祝福部分 -->
+        <div id="loveu" class="hidden-blessing">
+            <div class="blessing-content">
+                <p>愿时光温柔以待，愿岁月静好如初</p>
+                <div class="signature">- 周小狗</div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>Made for Miss.Hu, made with ❤️ by Heihei</p>
+                <p class="copyright">Copyright © 2017 - 2024. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 错误信息容器 -->
+    <div id="errorMsg" style="display: none;"></div>
+
+    <script type="text/javascript">
+    // 初始化纪念日时间
+    var together = new Date();
+
+    // 设置纪念日时间：2021年4月17日 21:00:00
+    together.setFullYear(2021, 3, 17); // 月份从0开始，所以3代表4月
+    together.setHours(21);
+    together.setMinutes(0);
+    together.setSeconds(0);
+    together.setMilliseconds(0);
+
+    // 检查浏览器支持
+    if (!document.createElement('canvas').getContext) {
+        var msg = document.createElement("div");
+        msg.id = "errorMsg";
+        msg.innerHTML = "Your browser doesn't support HTML5!<br>Recommend use Chrome 14+/IE 9+/Firefox 7+/Safari 4+";
+        document.body.appendChild(msg);
+        document.getElementById("errorMsg").style.display = "block";
+        document.querySelector(".text-section").style.display = "none";
+    } else {
+        // 等待DOM加载完成
+        $(document).ready(function() {
+            // 启动动画
+            setTimeout(function () {
+                startHeartAnimation();
+            }, 3000);
+
+            // 更新时间显示
+            timeElapse(together);
+            setInterval(function () {
+                timeElapse(together);
+            }, 500);
+
+            // 调整文字位置
+            adjustCodePosition();
+            $("#code .letter-content").typewriter();
+        });
+    }
+
+    // 窗口调整大小处理
+    $(window).resize(function() {
+        adjustCodePosition();
+    });
+    </script>
+</body>
+</html>
